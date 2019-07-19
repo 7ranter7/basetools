@@ -11,26 +11,10 @@ namespace RanterTools.Base
     [DisallowMultipleComponent]
     public class DontDestroyOnLoad : MonoBehaviour
     {
-
-        #region Enumerations
-
-
-        public enum DontDestroyOnLoadParameters
-        {
-            //None = (0),
-            MoveToCurrentSceneAfterRemoveComponent = (1 << 1),
-            DeleteGameObjectAfterRemoveComponent = (1 << 2),
-            //All = (~0)
-        }
-
-        #endregion Enumerations
-
-
-
         #region Parameters
 
         [SerializeField]
-        DontDestroyOnLoadParameters parameters = DontDestroyOnLoadParameters.MoveToCurrentSceneAfterRemoveComponent;
+        DontDestroyOnLoadFlags flags = DontDestroyOnLoadFlags.MoveToCurrentSceneAfterRemoveComponent;
 
         #endregion Parameters
 
@@ -49,17 +33,24 @@ namespace RanterTools.Base
         /// </summary>
         void OnDestroy()
         {
-            if (((int)parameters & (1 << 1)) >= 1)
+            if ((flags & DontDestroyOnLoadFlags.MoveToCurrentSceneAfterRemoveComponent) != 0)
             {
                 UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(this.gameObject, UnityEngine.SceneManagement.SceneManager.GetActiveScene());
             }
-            else if (((int)parameters & (1 << 2)) >= 1)
+            else if ((flags & DontDestroyOnLoadFlags.DeleteGameObjectAfterRemoveComponent) != 0)
             {
                 Destroy(gameObject);
             }
         }
 
         #endregion Unity
+    }
+
+
+    public enum DontDestroyOnLoadFlags
+    {
+        MoveToCurrentSceneAfterRemoveComponent = (1 << 1),
+        DeleteGameObjectAfterRemoveComponent = (1 << 2),
     }
 
 }
