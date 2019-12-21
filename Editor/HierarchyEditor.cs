@@ -12,7 +12,7 @@ namespace RanterTools.Editor
     //Normal realization for custom data for my types.
 
     /// <summary>
-    /// Hierarchy editor for custom draw for some types
+    /// Hierarchy editor for custom draw for some types.
     /// </summary>
     [InitializeOnLoad]
     public class HierarchyEditor : MonoBehaviour

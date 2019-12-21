@@ -5,7 +5,10 @@ using UnityEngine;
 
 namespace RanterTools.Base
 {
-
+    /// <summary>
+    /// Singleton pattern for MonoBehaviour
+    /// </summary>
+    /// <typeparam name="T">Type of singleton. Where T is MonoBehaviour.</typeparam>
     public class SingletonBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     {
         #region Global State
@@ -48,11 +51,40 @@ namespace RanterTools.Base
                                 CreateNewInstance();
                             }
                         }
-                        else CreateNewInstance();
+                        else
+                        {
+                            monoBehaviours = new List<T>(Resources.FindObjectsOfTypeAll<T>());
+                            if (monoBehaviours.Count == 0)
+                            {
+                                CreateNewInstance();
+                            }
+                            else if (monoBehaviours.Count == 1)
+                            {
+                                instance = monoBehaviours[0];
+                                if ((singletonBehaviourFlags & SingletonBehaviourFlags.DontDestroyOnLoadOnNew) != 0)
+                                    if (instance.gameObject.GetComponent<DontDestroyOnLoad>() == null)
+                                        instance.gameObject.AddComponent<DontDestroyOnLoad>();
+                            }
+                            else
+                            {
+                                ToolsDebug.LogWarning("Singleton " + typeof(T) + " have few instance on scene. First entry received.");
+                                instance = monoBehaviours[0];
+                                if ((singletonBehaviourFlags & SingletonBehaviourFlags.DestroyExcess) != 0)
+                                {
+                                    for (int i = 1; i < monoBehaviours.Count; i++)
+                                    {
+                                        DestroyImmediate(monoBehaviours[i]);
+                                    }
+                                }
+                            }
+                        }
                     }
                     else if (monoBehaviours.Count == 1)
                     {
                         instance = monoBehaviours[0];
+                        if ((singletonBehaviourFlags & SingletonBehaviourFlags.DontDestroyOnLoadOnNew) != 0)
+                            if (instance.gameObject.GetComponent<DontDestroyOnLoad>() == null)
+                                instance.gameObject.AddComponent<DontDestroyOnLoad>();
                     }
                     else
                     {

@@ -12,7 +12,9 @@ namespace RanterTools.Base
     public class DontDestroyOnLoad : MonoBehaviour
     {
         #region Parameters
-
+        /// <summary>
+        /// Don't destroy on load flags.
+        /// </summary>
         [SerializeField]
         DontDestroyOnLoadFlags flags = DontDestroyOnLoadFlags.MoveToCurrentSceneAfterRemoveComponent;
 
@@ -46,7 +48,9 @@ namespace RanterTools.Base
         #endregion Unity
     }
 
-
+    /// <summary>
+    /// Don't destroy on load flags enumeration.
+    /// </summary>
     public enum DontDestroyOnLoadFlags
     {
         MoveToCurrentSceneAfterRemoveComponent = (1 << 1),
