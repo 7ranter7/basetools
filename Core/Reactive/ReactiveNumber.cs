@@ -5,8 +5,9 @@ using UnityEngine;
 namespace RanterTools.Base
 {
 
-    public class ReactiveNumber<T>
+    public struct ReactiveNumber<T> where T : struct
     {
+
         public delegate void ValueChangeDelegate(T value);
         public event ValueChangeDelegate OnValueChanged;
         T value;
@@ -18,6 +19,11 @@ namespace RanterTools.Base
                 this.value = value;
                 if (OnValueChanged != null) OnValueChanged(value);
             }
+        }
+
+        public static implicit operator ReactiveNumber<T>(T x)
+        {
+            return new ReactiveNumber<T> { Value = x };
         }
     }
 
