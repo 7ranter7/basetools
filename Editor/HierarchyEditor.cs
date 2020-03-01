@@ -5,11 +5,8 @@ using UnityEditor;
 using System.Reflection;
 using RanterTools.Base;
 
-namespace RanterTools.Editor
+namespace RanterTools.Editor.Base
 {
-
-    //TODO:
-    //Normal realization for custom data for my types.
 
     /// <summary>
     /// Hierarchy editor for custom draw for some types.
@@ -50,7 +47,9 @@ namespace RanterTools.Editor
             GUIContent content = new GUIContent();
             content.text = extras;
             Rect s = new Rect(selectionRect);
-            s.x = s.x - style.CalcSize(content).x - 5;
+            float multiplier = 1;
+            if (obj.transform.childCount != 0) multiplier = 2.5f;
+            s.x = s.x - style.CalcSize(content).x - 5 * multiplier;
             GUI.Label(s, extras, style);
         }
     }

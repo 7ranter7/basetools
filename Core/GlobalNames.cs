@@ -12,6 +12,9 @@ namespace RanterTools.Base
     {
         #region Global State
         public const string MenuRanterTools = "RanterTools";
+        public const string Components = "Components";
+        public const string ComponentsRemoveAllMissingScripts = "Remove all missing scripts";
+        public const string ComponentsRemoveAllSelectedMissingScripts = "Remove all selected missing scripts";
         public const string ScenesUtilities = "Scenes utilities";
         public const string ScenesHistory = "Scenes history";
         public const string LoadNextScene = "Load next scene %RIGHT";
