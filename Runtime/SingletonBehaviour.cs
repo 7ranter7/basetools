@@ -71,6 +71,7 @@ namespace RanterTools.Base
         static void CreateNewInstance()
         {
             GameObject gameObjectTmp = new GameObject();
+            gameObjectTmp.name = $"{typeof(T).Name} (Singleton)";
             instance = gameObjectTmp.AddComponent<T>();
         }
         static void CheckDontDestroyOnLoad(T i)

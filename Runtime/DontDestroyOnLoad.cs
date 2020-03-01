@@ -20,6 +20,10 @@ namespace RanterTools.Base
 
         #endregion Parameters
 
+        #region State
+        bool ApplicationQuited = false;
+        #endregion State
+
         #region Unity
 
         /// <summary>
@@ -27,7 +31,15 @@ namespace RanterTools.Base
         /// </summary>
         void Awake()
         {
-            Object.DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(this.gameObject);
+        }
+
+        /// <summary>
+        /// Callback sent to all game objects before the application is quit.
+        /// </summary>
+        void OnApplicationQuit()
+        {
+            ApplicationQuited = true;
         }
 
         /// <summary>
@@ -35,9 +47,10 @@ namespace RanterTools.Base
         /// </summary>
         void OnDestroy()
         {
+            if (ApplicationQuited) return;
             if ((flags & DontDestroyOnLoadFlags.MoveToCurrentSceneAfterRemoveComponent) != 0)
             {
-                UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(this.gameObject, UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+                SceneManager.MoveGameObjectToScene(this.gameObject, SceneManager.GetActiveScene());
             }
             else if ((flags & DontDestroyOnLoadFlags.DeleteGameObjectAfterRemoveComponent) != 0)
             {
