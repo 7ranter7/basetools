@@ -45,9 +45,10 @@ namespace RanterTools.Base
             GameObject container = new GameObject();
             container.transform.parent = rootObjectForPools.transform;
             container.name = "Container " + prefab.name;
-            container.AddComponent<PoolContainer>().ParentPrefab = prefab;
+            var poolContainer = container.AddComponent<PoolContainer>();
+            poolContainer.ParentOrigin = prefab;
             GameObjectPool poolTmp = new GameObjectPool();
-            poolTmp.poolContainer = container;
+            poolTmp.poolContainer = poolContainer;
             poolTmp.ResizePool(prefab, size);
             pool[prefab] = poolTmp;
         }
@@ -125,9 +126,9 @@ namespace RanterTools.Base
     {
         #region Parameters
         /// <summary>
-        /// GameObject pool container
+        /// PoolContainer pool container
         /// </summary>
-        public GameObject poolContainer;
+        public PoolContainer poolContainer;
         #endregion Parameters
         #region State
         /// <summary>
@@ -185,6 +186,7 @@ namespace RanterTools.Base
                     interfacePooledObject = temp.GetComponent<IPooledObject>();
                     if (interfacePooledObject == null) interfacePooledObject = temp.AddComponent<PooledObject>();
                     interfacePooledObject.ParentPrefab = prefab;
+                    interfacePooledObject.ParentPoolContainer = poolContainer;
                     temp.transform.parent = poolContainer.transform;
                     temp.SetActive(false);
                     available[temp] = temp;
@@ -248,18 +250,25 @@ namespace RanterTools.Base
         /// <summary>
         /// Destroy all gameObjects in this pool.
         /// </summary>
-        public void DestroyAll()
+        public void DestroyAll(bool justInited = false)
         {
             var iterator = inaccessible.GetEnumerator();
             while (iterator.MoveNext())
             {
-                IPooledObject interfacePooledObject = null;
-                interfacePooledObject = iterator.Current.Value.GetComponent<IPooledObject>();
-                if (interfacePooledObject == null) interfacePooledObject = iterator.Current.Value.AddComponent<PooledObject>();
-                interfacePooledObject.DestroyPooledObject();
-                available[iterator.Current.Value] = iterator.Current.Value;
-                iterator.Current.Value.SetActive(false);
-                iterator.Current.Value.transform.parent = poolContainer.transform;
+                if (!justInited)
+                {
+                    IPooledObject interfacePooledObject = null;
+                    interfacePooledObject = iterator.Current.Value.GetComponent<IPooledObject>();
+                    if (interfacePooledObject == null) interfacePooledObject = iterator.Current.Value.AddComponent<PooledObject>();
+                    interfacePooledObject.DestroyPooledObject();
+                    available[iterator.Current.Value] = iterator.Current.Value;
+                    iterator.Current.Value.SetActive(false);
+                    iterator.Current.Value.transform.parent = poolContainer.transform;
+                }
+                else
+                {
+                    if (iterator.Current.Value != null) GameObject.DestroyImmediate(iterator.Current.Value);
+                }
             }
             inaccessible.Clear();
         }

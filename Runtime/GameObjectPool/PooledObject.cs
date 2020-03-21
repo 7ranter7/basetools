@@ -20,14 +20,21 @@ public class PooledObject : MonoBehaviour, IPooledObject
     #region Parameters
     #region  IPooledObject
     /// <summary>
-    /// Parant prefabe used for creation this instace.
+    /// Parent prefab used for creation this instance.
     /// </summary>
-    GameObject parentPrefab;
+    Object parentPrefab;
     /// <summary>
-    /// Parant prefabe used for creation this instace.
+    /// Parent prefab used for creation this instance.
     /// </summary>
-    /// <value>Parant prefabe used for creation this instace</value>
-    public GameObject ParentPrefab { get { return parentPrefab; } set { if (parentPrefab == null) parentPrefab = value; } }
+    /// <value>Parent prefab used for creation this instance</value>
+    public Object ParentPrefab { get { return parentPrefab; } set { if (parentPrefab == null) parentPrefab = value; } }
+
+
+    /// <summary>
+    /// Parent pool container used for creation this instance
+    /// </summary>
+    /// <value>Parent pool container used for creation this instance</value>
+    public PoolContainer ParentPoolContainer { get; set; }
     #endregion IPooledObject
     #endregion Parameters
     #region Methods
@@ -47,5 +54,27 @@ public class PooledObject : MonoBehaviour, IPooledObject
         if (PooledObjectDestroyEvent != null) PooledObjectDestroyEvent();
     }
     #endregion IPooledObject
+
+    void PoolContainerDestroyed(PoolContainer poolContainer)
+    {
+        Debug.Log($"PoolContainer {ParentPoolContainer} {poolContainer}");
+        if (ParentPoolContainer == null || poolContainer == ParentPoolContainer) DestroyImmediate(gameObject);
+    }
     #endregion Methods
+    #region Unity
+    /// <summary>
+    /// Awake is called when the script instance is being loaded.
+    /// </summary>
+    void Awake()
+    {
+        PoolContainer.OnPoolContainerDestroyed += PoolContainerDestroyed;
+    }
+    /// <summary>
+    /// This function is called when the MonoBehaviour will be destroyed.
+    /// </summary>
+    void OnDestroy()
+    {
+        PoolContainer.OnPoolContainerDestroyed -= PoolContainerDestroyed;
+    }
+    #endregion Unity
 }

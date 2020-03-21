@@ -21,10 +21,16 @@ namespace RanterTools.Base
         #endregion Events
         #region Parameters
         /// <summary>
-        /// Parant prefabe used for creation this instace
+        /// Parent prefab used for creation this instance
         /// </summary>
-        /// <value>Parant prefabe used for creation this instace</value>
-        GameObject ParentPrefab { get; set; }
+        /// <value>Parent prefabe used for creation this instance</value>
+        Object ParentPrefab { get; set; }
+
+        /// <summary>
+        /// Parent pool container used for creation this instance
+        /// </summary>
+        /// <value>Parent pool container used for creation this instance</value>
+        PoolContainer ParentPoolContainer { get; set; }
         #endregion Parameters
         #region Methods
         /// <summary>

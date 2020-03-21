@@ -9,19 +9,22 @@ namespace RanterTools.Base
     /// </summary>
     public class PoolContainer : MonoBehaviour
     {
+        #region Global State
+        public static event System.Action<PoolContainer> OnPoolContainerDestroyed;
+        #endregion Global State
         #region State
         /// <summary>
-        ///  Prefab for instance or destroying pooled gameObjects.
+        ///  Origin for instance or destroying pooled gameObjects.
         /// </summary>
-        GameObject parentPrefab;
+        Object parentOrigin;
         /// <summary>
-        /// Prefab for instance or destroying pooled gameObjects property.
+        /// Origin for instance or destroying pooled gameObjects property.
         /// </summary>
-        /// <value> Prefab for instance or destroying pooled gameObjects.</value>
-        public GameObject ParentPrefab
+        /// <value> Origin for instance or destroying pooled gameObjects.</value>
+        public Object ParentOrigin
         {
-            get { return parentPrefab; }
-            set { parentPrefab = value; }
+            get { return parentOrigin; }
+            set { parentOrigin = value; }
         }
         #endregion State
         #region Unity
@@ -30,7 +33,7 @@ namespace RanterTools.Base
         /// </summary>
         void OnDestroy()
         {
-            ParentPrefab.DestroyGameObjectPool();
+            if (OnPoolContainerDestroyed != null) OnPoolContainerDestroyed(this);
         }
         #endregion Unity
     }
