@@ -57,7 +57,6 @@ public class PooledObject : MonoBehaviour, IPooledObject
 
     void PoolContainerDestroyed(PoolContainer poolContainer)
     {
-        Debug.Log($"PoolContainer {ParentPoolContainer} {poolContainer}");
         if (ParentPoolContainer == null || poolContainer == ParentPoolContainer) DestroyImmediate(gameObject);
     }
     #endregion Methods
