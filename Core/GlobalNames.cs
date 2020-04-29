@@ -15,6 +15,7 @@ namespace RanterTools.Base
         public const string Components = "Components";
         public const string ComponentsRemoveAllMissingScripts = "Remove all missing scripts";
         public const string ComponentsRemoveAllSelectedMissingScripts = "Remove all selected missing scripts";
+        public const string ComponentsSelectAllGameobjectsWithMissingScripts = "Select all gameobjects with missing scripts";
         public const string ScenesUtilities = "Scenes utilities";
         public const string ScenesHistory = "Scenes history";
         public const string LoadNextScene = "Load next scene %RIGHT";
