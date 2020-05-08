@@ -64,7 +64,7 @@ namespace RanterTools.Textures
             await outer;
             var path = Path.Combine(Application.persistentDataPath, $"{encodedData.GetHashCode()}.png");
             File.WriteAllBytes(path, outer.Result);
-            UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(Path.Combine("file://", path));
+            UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(Path.Combine("file://", path.TrimStart('/')));
             var result = unityWebRequest.SendWebRequest();
             while (!result.isDone)
             {
