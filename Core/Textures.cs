@@ -1,12 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Threading;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System;
-using System.Threading;
 using SD = System.Diagnostics;
 using System.Threading.Tasks;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.Experimental.Rendering;
 
 
@@ -23,13 +24,30 @@ namespace RanterTools.Textures
         #endregion Global State
 
         #region Global Methods
-        public static string Texture2DToBase64(Texture2D texture)
+        public static async Task<string> Texture2DToBase64Async(Texture2D texture)
         {
+            SD.Stopwatch stopwatch = SD.Stopwatch.StartNew();
             byte[] imageData = ImageConversion.EncodeToPNG(texture);
-            return Convert.ToBase64String(imageData).Insert(0, "data:image/png;base64,");
+            var outer = Task.Factory.StartNew<string>(() =>      // внешняя задача
+            {
+
+                string base64 = Convert.ToBase64String(imageData).Insert(0, "data:image/png;base64,");
+                stopwatch = SD.Stopwatch.StartNew();
+                return base64;
+            });
+            await outer;
+            return outer.Result;
         }
 
-        public async static Task<Texture2D> Base64ToTexture2D(string encodedData)
+        public static string Texture2DToBase64(Texture2D texture)
+        {
+            SD.Stopwatch stopwatch = SD.Stopwatch.StartNew();
+            byte[] imageData = ImageConversion.EncodeToPNG(texture);
+            string base64 = Convert.ToBase64String(imageData).Insert(0, "data:image/png;base64,");
+            return base64;
+        }
+
+        public async static Task<Texture2D> Base64ToTexture2DAsync(string encodedData)
         {
             Texture2D texture;
             SD.Stopwatch stopwatch = SD.Stopwatch.StartNew();
@@ -40,18 +58,34 @@ namespace RanterTools.Textures
             {
 
                 byte[] imageData = Convert.FromBase64String(encodedData.Replace("data:image/png;base64,", ""));
-
-
-
                 stopwatch = SD.Stopwatch.StartNew();
-
-
-
-
                 return imageData;
             });
             await outer;
-            ImageConversion.LoadImage(texture, outer.Result, false);
+            var path = Path.Combine(Application.persistentDataPath, $"{encodedData.GetHashCode()}.png");
+            File.WriteAllBytes(path, outer.Result);
+            UnityWebRequest unityWebRequest = UnityWebRequestTexture.GetTexture(Path.Combine("file://", path));
+            var result = unityWebRequest.SendWebRequest();
+            while (!result.isDone)
+            {
+                await Task.Yield();
+            }
+            Texture2D image = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+            image = DownloadHandlerTexture.GetContent(unityWebRequest);
+            Debug.Log($"End convert texture from base64 with {stopwatch.ElapsedMilliseconds}ms");
+            File.Delete(path);
+            return image;
+        }
+
+        public static Texture2D Base64ToTexture2D(string encodedData)
+        {
+            Texture2D texture;
+            SD.Stopwatch stopwatch = SD.Stopwatch.StartNew();
+            texture = new Texture2D(2, 2);
+            texture.filterMode = FilterMode.Point;
+            byte[] imageData = Convert.FromBase64String(encodedData.Replace("data:image/png;base64,", ""));
+            stopwatch = SD.Stopwatch.StartNew();
+            ImageConversion.LoadImage(texture, imageData, false);
             Debug.Log($"End convert texture from base64 with {stopwatch.ElapsedMilliseconds}ms");
             return texture;
         }
