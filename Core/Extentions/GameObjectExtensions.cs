@@ -37,15 +37,27 @@ namespace RanterTools.Base
                 rootObjectForPools = new GameObject();
                 rootObjectForPools.name = "Pools of objects";
             }
+
+            PoolContainer poolContainer;
+            GameObject container;
             if (pool.ContainsKey(prefab))
             {
+                if (pool[prefab].poolContainer == null)
+                {
+                    container = new GameObject();
+                    container.transform.parent = rootObjectForPools.transform;
+                    container.name = "Container " + prefab.name;
+                    poolContainer  = container.AddComponent<PoolContainer>();
+                    poolContainer.ParentOrigin = prefab;
+                    pool[prefab].poolContainer = poolContainer;
+                }
                 pool[prefab].ResizePool(size);
                 return;
             }
-            GameObject container = new GameObject();
+            container = new GameObject();
             container.transform.parent = rootObjectForPools.transform;
             container.name = "Container " + prefab.name;
-            var poolContainer = container.AddComponent<PoolContainer>();
+            poolContainer = container.AddComponent<PoolContainer>();
             poolContainer.ParentOrigin = prefab;
             GameObjectPool poolTmp = new GameObjectPool();
             poolTmp.poolContainer = poolContainer;

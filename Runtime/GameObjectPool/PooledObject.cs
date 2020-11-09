@@ -39,6 +39,7 @@ public class PooledObject : MonoBehaviour, IPooledObject
     #endregion Parameters
     #region Methods
     #region  IPooledObject
+    
     /// <summary>
     ///  Custom handler for start pooled game object
     /// </summary>

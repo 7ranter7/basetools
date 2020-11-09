@@ -6,61 +6,72 @@ using UnityEngine;
 namespace RanterTools.Base
 {
     /// <summary>
-    /// MonoBehaviour Extentions
+    /// Component Extentions
     /// </summary>
-    public static class MonoBehaviourExtentions
+    public static class ComponentExtentions
     {
 
         #region Global State
-        #region MonoBehaviourPool
+        #region ComponentPool
         /// <summary>
-        /// Pool of MonoBehaviours.
+        /// Pool of Components.
         /// </summary>
-        /// <typeparam name="MonoBehaviour">MonoBehaviour which describe their pool. </typeparam>
-        /// <typeparam name="MonoBehaviourPool">Pool of instances of this MonoBehaviours.</typeparam>
+        /// <typeparam name="Component">Component which describe their pool. </typeparam>
+        /// <typeparam name="ComponentPool">Pool of instances of this Components.</typeparam>
         /// <returns>Dictionary for rapid access of instances.</returns>
-        static Dictionary<MonoBehaviour, MonoBehaviourPool> pool = new Dictionary<MonoBehaviour, MonoBehaviourPool>();
-        public static GameObject rootMonoBehaviourForPools;
-        #endregion MonoBehaviourPool
+        static Dictionary<Component, ComponentPool> pool = new Dictionary<Component, ComponentPool>();
+        public static GameObject rootComponentForPools;
+        #endregion ComponentPool
         #endregion Global State
 
         #region Global Methods
-        #region MonoBehaviourPool
+        #region ComponentPool
         /// <summary>
-        /// Initiate MonoBehaviours pool with size.
+        /// Initiate Components pool with size.
         /// </summary>
-        /// <param name="origin">Origin of MonoBehaviour for creating MonoBehaviours on pool.</param>
+        /// <param name="origin">Origin of Component for creating Components on pool.</param>
         /// <param name="size">Size of pool.</param>
-        public static void InitiateMonoBehaviourPool(this MonoBehaviour origin, int size = 1000)
+        public static void InitiateComponentPool<T>(this T origin, int size = 1000) where T:Component
         {
-            if (rootMonoBehaviourForPools == null)
+            if (rootComponentForPools == null)
             {
-                rootMonoBehaviourForPools = new GameObject();
-                rootMonoBehaviourForPools.name = "Pools of MonoBehaviours";
+                rootComponentForPools = new GameObject();
+                rootComponentForPools.name = "Pools of Components";
             }
+            PoolContainer poolContainer;
+            GameObject container;
             if (pool.ContainsKey(origin))
             {
+                if (pool[origin].poolContainer == null)
+                {
+                    container = new GameObject();
+                    container.transform.parent = rootComponentForPools.transform;
+                    container.name = "Container " + origin.name;
+                    poolContainer  = container.AddComponent<PoolContainer>();
+                    poolContainer.ParentOrigin = origin;
+                    pool[origin].poolContainer = poolContainer;
+                }
                 pool[origin].ResizePool(size);
                 return;
             }
-            GameObject container = new GameObject();
-            container.transform.parent = rootMonoBehaviourForPools.transform;
+            container = new GameObject();
+            container.transform.parent = rootComponentForPools.transform;
             container.name = "Container " + origin.name;
-            var poolContainer = container.AddComponent<PoolContainer>();
+            poolContainer = container.AddComponent<PoolContainer>();
             poolContainer.ParentOrigin = origin;
-            MonoBehaviourPool poolTmp = new MonoBehaviourPool();
+            ComponentPool poolTmp = new ComponentPool();;
             poolTmp.poolContainer = poolContainer;
             poolTmp.ResizePool(origin, size);
             pool[origin] = poolTmp;
         }
 
         /// <summary>
-        /// Destroy MonoBehaviours pool of origin.
+        /// Destroy Components pool of origin.
         /// </summary>
-        /// <param name="origin">Origin of MonoBehaviour for destroy game MonoBehaviours pool of this.</param>
-        public static void DestroyMonoBehaviourPool(this MonoBehaviour origin)
+        /// <param name="origin">Origin of Component for destroy game Components pool of this.</param>
+        public static void DestroyComponentPool<T>(this T origin)where T:Component
         {
-            if (rootMonoBehaviourForPools == null) return;
+            if (rootComponentForPools == null) return;
             if (!pool.ContainsKey(origin)) return;
             pool[origin].DestroyAll();
             pool.Remove(origin);
@@ -68,33 +79,32 @@ namespace RanterTools.Base
 
 
         /// <summary>
-        /// Special instansiate method for pooled MonoBehaviours.
+        /// Special instansiate method for pooled Components.
         /// </summary>
-        public static MonoBehaviour InstancePooledMonoBehaviour(this MonoBehaviour origin)
+        public static T InstancePooledComponent<T>(this T origin)where T:Component
         {
             if (pool.ContainsKey(origin))
             {
-                return pool[origin].Instance();
+                return pool[origin].Instance()as T;
             }
             else
             {
-                InitiateMonoBehaviourPool(origin);
-                return pool[origin].Instance();
+                InitiateComponentPool(origin);
+                return pool[origin].Instance() as T;
             }
         }
 
         /// <summary>
-        /// Special destroy method for pooled MonoBehaviours.
+        /// Special destroy method for pooled Components.
         /// </summary>
-        public static void DestroyPooledMonoBehaviour(this MonoBehaviour origin, MonoBehaviour MonoBehaviour)
+        public static void DestroyPooledComponent<T>(this T origin, T Component)where T:Component
         {
-
             if (pool.ContainsKey(origin))
             {
-                pool[origin].Destroy(MonoBehaviour);
+                pool[origin].Destroy(Component);
             }
         }
-        #endregion MonoBehaviourPool
+        #endregion ComponentPool
 
 
         #endregion Unity
@@ -102,7 +112,7 @@ namespace RanterTools.Base
 
 
     [System.Serializable]
-    class MonoBehaviourPool
+    class ComponentPool
     {
         #region Parameters
         /// <summary>
@@ -114,21 +124,21 @@ namespace RanterTools.Base
         /// <summary>
         /// Parent origin for creation instances.
         /// </summary>
-        MonoBehaviour origin;
+        Component origin;
         /// <summary>
-        /// Dictionary for available MonoBehaviours in pool.
+        /// Dictionary for available Components in pool.
         /// </summary>
-        /// <typeparam name="MonoBehaviour">Key type.</typeparam>
-        /// <typeparam name="MonoBehaviour">Value type.</typeparam>
-        /// <returns>MonoBehaviour.</returns>
-        Dictionary<MonoBehaviour, MonoBehaviour> available = new Dictionary<MonoBehaviour, MonoBehaviour>();
+        /// <typeparam name="Component">Key type.</typeparam>
+        /// <typeparam name="Component">Value type.</typeparam>
+        /// <returns>Component.</returns>
+        Dictionary<Component, Component> available = new Dictionary<Component, Component>();
         /// <summary>
-        /// Dictionary for inaccessible MonoBehaviours in pool.
+        /// Dictionary for inaccessible Components in pool.
         /// </summary>
-        /// <typeparam name="MonoBehaviour">Key type.</typeparam>
-        /// <typeparam name="MonoBehaviour">Value type.</typeparam>
-        /// <returns>MonoBehaviour.</returns>
-        Dictionary<MonoBehaviour, MonoBehaviour> inaccessible = new Dictionary<MonoBehaviour, MonoBehaviour>();
+        /// <typeparam name="Component">Key type.</typeparam>
+        /// <typeparam name="Component">Value type.</typeparam>
+        /// <returns>Component.</returns>
+        Dictionary<Component, Component> inaccessible = new Dictionary<Component, Component>();
         /// <summary>
         /// Current pool size.
         /// </summary>
@@ -138,37 +148,38 @@ namespace RanterTools.Base
 
         #region Mathods
         /// <summary>
-        /// Resize MonoBehaviour pool.
+        /// Resize Component pool.
         /// </summary>
         /// <param name="origin">Parent origin for creation instances.</param>
         /// <param name="size">Pool size.</param>
-        public void ResizePool(MonoBehaviour origin, int size)
+        public void ResizePool(Component origin, int size)
         {
+            Debug.Log($"Pool new size {size} old size {available.Count+inaccessible.Count}");
             if (size <= 2) return;
             if (size <= available.Count)
             {
-                MonoBehaviour temp;
+                Component temp;
                 var enumerator = available.GetEnumerator();
                 enumerator.MoveNext();
                 for (int i = 0; i < (available.Count - size); i++)
                 {
                     temp = enumerator.Current.Value;
                     available.Remove(temp);
-                    MonoBehaviour.DestroyImmediate(temp);
+                    Component.DestroyImmediate(temp);
                 }
             }
             else
             {
-                MonoBehaviour temp;
+                Component temp;
                 IPooledObject interfacePooledObject = null;
                 for (int i = 0; i < (size - available.Count); i++)
                 {
-                    temp = MonoBehaviour.Instantiate(origin);
+                    temp = Component.Instantiate(origin);
                     interfacePooledObject = temp.GetComponent<IPooledObject>();
                     if (interfacePooledObject == null) interfacePooledObject = temp.gameObject.AddComponent<PooledObject>();
                     interfacePooledObject.ParentPrefab = origin;
                     interfacePooledObject.ParentPoolContainer = poolContainer;
-                    temp.transform.parent = poolContainer.transform;
+                    temp.transform.SetParent(poolContainer.transform);
                     temp.gameObject.SetActive(false);
                     available[temp] = temp;
                 }
@@ -177,7 +188,7 @@ namespace RanterTools.Base
             currentSize = size;
         }
         /// <summary>
-        /// Resize MonoBehaviour pool.
+        /// Resize Component pool.
         /// </summary>
         /// <param name="size">Pool size.</param>
         public void ResizePool(int size)
@@ -186,17 +197,24 @@ namespace RanterTools.Base
         }
 
         /// <summary>
-        /// Get instance from MonoBehaviour pool.
+        /// Get instance from Component pool.
         /// </summary>
         /// <returns></returns>
-        public MonoBehaviour Instance()
+        public Component Instance()
         {
+            if (available.Count == 0)
+            {
+                int size = inaccessible.Count;
+                if (size == 0) size = 1000;
+                else size *= 2;
+                ResizePool(size);
+            }
             if (available.Count != 0)
             {
                 IPooledObject interfacePooledObject = null;
                 var enumerator = available.GetEnumerator();
                 enumerator.MoveNext();
-                MonoBehaviour temp = enumerator.Current.Key;
+                Component temp = enumerator.Current.Key;
                 interfacePooledObject = temp.GetComponent<IPooledObject>();
                 if (interfacePooledObject == null) interfacePooledObject = temp.gameObject.AddComponent<PooledObject>();
                 available.Remove(temp);
@@ -207,29 +225,31 @@ namespace RanterTools.Base
             }
             else
             {
-                throw (new MonoBehaviourPoolException());
+                throw (new ComponentPoolException());
             }
         }
         /// <summary>
-        /// Destroy instance of pooled MonoBehaviour.
+        /// Destroy instance of pooled Component.
         /// </summary>
-        /// <param name="MonoBehaviour">Deleting MonoBehaviour.</param>
-        public void Destroy(MonoBehaviour MonoBehaviour)
+        /// <param name="Component">Deleting Component.</param>
+        public void Destroy(Component Component)
         {
-            if (inaccessible.ContainsKey(MonoBehaviour))
+            if (inaccessible == null || Component==null) return;
+            if (inaccessible.ContainsKey(Component))
             {
                 IPooledObject interfacePooledObject = null;
-                interfacePooledObject = MonoBehaviour.GetComponent<IPooledObject>();
-                if (interfacePooledObject == null) interfacePooledObject = MonoBehaviour.gameObject.AddComponent<PooledObject>();
+                interfacePooledObject = Component.GetComponent<IPooledObject>();
+                if (interfacePooledObject == null) interfacePooledObject = Component.gameObject.AddComponent<PooledObject>();
                 interfacePooledObject.DestroyPooledObject();
-                inaccessible.Remove(MonoBehaviour);
-                available[MonoBehaviour] = MonoBehaviour;
-                MonoBehaviour.gameObject.SetActive(false);
-                MonoBehaviour.transform.parent = poolContainer.transform;
+                inaccessible.Remove(Component);
+                available[Component] = Component;
+                Component.transform.SetParent(poolContainer.transform);
+                Component.gameObject.SetActive(false);
+                
             }
         }
         /// <summary>
-        /// Destroy all MonoBehaviours in this pool.
+        /// Destroy all Components in this pool.
         /// </summary>
         public void DestroyAll(bool justInited = false)
         {
@@ -249,7 +269,7 @@ namespace RanterTools.Base
                 else
                 {
                     Debug.Log($"Value {iterator.Current.Value}");
-                    if (iterator.Current.Value != null) MonoBehaviour.DestroyImmediate(iterator.Current.Value);
+                    if (iterator.Current.Value != null) Component.DestroyImmediate(iterator.Current.Value);
                 }
             }
             inaccessible.Clear();
@@ -259,7 +279,7 @@ namespace RanterTools.Base
     /// <summary>
     /// Exception if pool empty.
     /// </summary>
-    public class MonoBehaviourPoolException : System.Exception
+    public class ComponentPoolException : System.Exception
     {
         public override string Message { get { return "Try get instance from empty pool."; } }
     }
