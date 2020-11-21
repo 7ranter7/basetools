@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -24,6 +25,20 @@ namespace RanterTools.Base
         bool ApplicationQuited = false;
         #endregion State
 
+        #region Methods
+        
+#if UNITY_EDITOR
+        void PlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.ExitingPlayMode)
+            {
+                ApplicationQuited = true;
+            }
+        }
+#endif
+        
+        #endregion
+        
         #region Unity
 
         /// <summary>
@@ -32,6 +47,9 @@ namespace RanterTools.Base
         void Awake()
         {
             DontDestroyOnLoad(this.gameObject);
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged += PlayModeStateChanged;
+#endif
         }
 
         /// <summary>
@@ -48,6 +66,7 @@ namespace RanterTools.Base
         void OnDestroy()
         {
             if (ApplicationQuited) return;
+          
             if ((flags & DontDestroyOnLoadFlags.MoveToCurrentSceneAfterRemoveComponent) != 0)
             {
                 SceneManager.MoveGameObjectToScene(this.gameObject, SceneManager.GetActiveScene());

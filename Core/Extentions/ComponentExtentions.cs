@@ -99,6 +99,7 @@ namespace RanterTools.Base
         /// </summary>
         public static void DestroyPooledComponent<T>(this T origin, T Component)where T:Component
         {
+            if (Component == null) return;
             if (pool.ContainsKey(origin))
             {
                 pool[origin].Destroy(Component);

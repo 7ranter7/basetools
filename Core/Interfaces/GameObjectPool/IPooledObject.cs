@@ -41,6 +41,8 @@ namespace RanterTools.Base
         /// Custom handler for destroy pooled game object
         /// </summary>
         void DestroyPooledObject();
+        
+        
         #endregion Methods
     }
 }
